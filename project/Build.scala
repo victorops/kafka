@@ -56,7 +56,6 @@ object KafkaBuild extends Build {
           <exclude module="log4j"/>
           <exclude module="jline"/>
         </dependency>
-
       </dependencies>
   )
 

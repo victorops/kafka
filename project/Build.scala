@@ -24,9 +24,9 @@ import scala.xml.transform.{RewriteRule, RuleTransformer}
 
 object KafkaBuild extends Build {
   val commonSettings = Seq(
-    version := "0.8-SNAPSHOT",
+    version := "0.7.2FF",
     organization := "org.apache",
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-g:none"),
+    scalacOptions ++= Seq("-deprecation", "-unchecked"),
     scalaVersion := "2.10.0",
     javacOptions ++= Seq("-Xlint:unchecked", "-source", "1.5"),
     parallelExecution in Test := false, // Prevent tests from overrunning each other
@@ -148,5 +148,4 @@ object KafkaBuild extends Build {
       case other => other
     }
   })
-
 }

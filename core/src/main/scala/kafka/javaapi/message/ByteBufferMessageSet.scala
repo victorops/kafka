@@ -31,7 +31,7 @@ class ByteBufferMessageSet(private val buffer: ByteBuffer,
 
   def this(compressionCodec: CompressionCodec, messages: java.util.List[Message]) {
     //this(MessageSet.createByteBuffer(compressionCodec, scala.collection.JavaConversions.asBuffer(messages): _*),
-    this(MessageSet.createByteBuffer(compressionCodec, (messages.asScala.toBuffer): _*),
+    this(MessageSet.createByteBuffer(compressionCodec, messages.asScala.toBuffer: _*),
          0L, ErrorMapping.NoError)
   }
 

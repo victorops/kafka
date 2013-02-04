@@ -164,7 +164,9 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
     // find the number of broker partitions registered for this topic
       val brokerTopicPath = ZkUtils.BrokerTopicsPath + "/" + topic
       val brokerList = ZkUtils.getChildrenParentMayNotExist(zkClient, brokerTopicPath)
+
       val numPartitions = brokerList.map(bid => ZkUtils.readData(zkClient, brokerTopicPath + "/" + bid).toInt)
+
       val brokerPartitions = brokerList.map(bid => bid.toInt).zip(numPartitions)
       val sortedBrokerPartitions = brokerPartitions.sortWith((id1, id2) => id1._1 < id2._1)
       debug("Broker ids and # of partitions on each for topic: " + topic + " = " + sortedBrokerPartitions.toString)
@@ -242,7 +244,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
           case "/brokers/ids"    =>        // this is a watcher for /broker/ids path
             debug("[BrokerTopicsListener] List of brokers changed in the Kafka cluster " + parentPath +
                 "\t Currently registered list of brokers -> " + curChilds.toString)
-            processBrokerChange(parentPath, curChilds.asScala.toList)
+            processBrokerChange(parentPath, curChilds.asScala)
           case _ =>
             val pathSplits = parentPath.split("/")
             val topic = pathSplits.last
@@ -264,7 +266,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
       if(parentPath.equals(ZkUtils.BrokerIdsPath)) {
         //import scala.collection.JavaConversions._
         import collection.JavaConversions._
-        val updatedBrokerList = curChilds.map(bid => bid.toInt)
+        val updatedBrokerList = curChilds.map(bid => bid.toInt).toBuffer
         val newBrokers = updatedBrokerList.toSet &~ oldBrokerIdMap.keySet
         debug("[BrokerTopicsListener] List of newly registered brokers: " + newBrokers.toString)
         newBrokers.foreach { bid =>
@@ -378,7 +380,5 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
       // there is no need to re-register other listeners as they are listening on the child changes of
       // permanent nodes
     }
-
   }
-
 }

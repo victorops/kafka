@@ -173,19 +173,14 @@ object ZkUtils extends Logging {
   }
 
   def getChildrenParentMayNotExist(client: ZkClient, path: String): Seq[String] = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
     // triggers implicit conversion from java list to scala Seq
 
-    var ret: java.util.List[String] = null
-    try {
-      ret = client.getChildren(path)
-    }
+    try { client.getChildren(path).asScala.toSeq }
     catch {
-      case e: ZkNoNodeException =>
-        return Nil
-      case e2 => throw e2
+      case e: ZkNoNodeException => Nil
+      case e2                   => throw e2
     }
-    return ret
   }
 
   /**

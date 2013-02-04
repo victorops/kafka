@@ -159,13 +159,19 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
   private def getZKTopicPartitionInfo(): collection.mutable.Map[String, SortedSet[Partition]] = {
     val brokerPartitionsPerTopic = new HashMap[String, SortedSet[Partition]]()
     ZkUtils.makeSurePersistentPathExists(zkClient, ZkUtils.BrokerTopicsPath)
+
+    println("Broker Topic Path => " + ZkUtils.BrokerTopicsPath)
     val topics = ZkUtils.getChildrenParentMayNotExist(zkClient, ZkUtils.BrokerTopicsPath)
+
     topics.foreach { topic =>
     // find the number of broker partitions registered for this topic
       val brokerTopicPath = ZkUtils.BrokerTopicsPath + "/" + topic
       val brokerList = ZkUtils.getChildrenParentMayNotExist(zkClient, brokerTopicPath)
 
-      val numPartitions = brokerList.map(bid => ZkUtils.readData(zkClient, brokerTopicPath + "/" + bid).toInt)
+      val numPartitions = brokerList.map{bid =>
+        val x = ZkUtils.readData(zkClient, brokerTopicPath + "/" + bid)
+        if (x == "") 0 else bid.toInt
+      }
 
       val brokerPartitions = brokerList.map(bid => bid.toInt).zip(numPartitions)
       val sortedBrokerPartitions = brokerPartitions.sortWith((id1, id2) => id1._1 < id2._1)

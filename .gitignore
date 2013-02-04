@@ -12,3 +12,6 @@ project/sbt_project_definition.iml
 *~
 *#
 .#*
+/kafka-request.log
+/log-cleaner.log
+/state-change.log

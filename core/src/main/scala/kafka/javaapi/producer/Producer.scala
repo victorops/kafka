@@ -65,9 +65,11 @@ class Producer[K,V](config: ProducerConfig,
                                override def init(props: Properties) { eventHandler.init(props) }
                                override def handle(events: Seq[QueueItem[V]], producer: kafka.producer.SyncProducer,
                                                    encoder: Encoder[V]) {
-                                 import collection.JavaConversions._
+                                 //import collection.JavaConversions._
+                                 import collection.JavaConverters._
                                  import kafka.javaapi.Implicits._
-                                 eventHandler.handle(asList(events), producer, encoder)
+                                 //eventHandler.handle(asList(events), producer, encoder)
+                                 eventHandler.handle(events, producer, encoder)
                                }
                                override def close { eventHandler.close }
                              },
@@ -84,10 +86,12 @@ class Producer[K,V](config: ProducerConfig,
                                  cbkHandler.afterDequeuingExistingData(data)
                                }
                                override def beforeSendingData(data: Seq[QueueItem[V]] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 asList(cbkHandler.beforeSendingData(asList(data)))
+                                 //asList(cbkHandler.beforeSendingData(asList(data)))
+                                 cbkHandler.beforeSendingData(data.toList)
                                }
                                override def lastBatchBeforeClose: scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 asBuffer(cbkHandler.lastBatchBeforeClose)
+                                 //asBuffer(cbkHandler.lastBatchBeforeClose)
+                                 cbkHandler.lastBatchBeforeClose.toBuffer
                                }
                                override def close { cbkHandler.close }
                              }))
@@ -101,7 +105,7 @@ class Producer[K,V](config: ProducerConfig,
   def send(producerData: kafka.javaapi.producer.ProducerData[K,V]) {
     import collection.JavaConversions._
     underlying.send(new kafka.producer.ProducerData[K,V](producerData.getTopic, producerData.getKey,
-                                                         asBuffer(producerData.getData)))
+                                                         producerData.getData.toBuffer))
   }
 
   /**
@@ -109,9 +113,9 @@ class Producer[K,V](config: ProducerConfig,
    * @param producerData list of producer data objects that encapsulate the topic, key and message data
    */
   def send(producerData: java.util.List[kafka.javaapi.producer.ProducerData[K,V]]) {
-    import collection.JavaConversions._
-    underlying.send(asBuffer(producerData).map(pd => new kafka.producer.ProducerData[K,V](pd.getTopic, pd.getKey,
-                                                         asBuffer(pd.getData))): _*)
+    import collection.JavaConverters._
+    underlying.send(producerData.asScala.map(pd => new kafka.producer.ProducerData[K,V](pd.getTopic, pd.getKey,
+                                                         pd.getData.asScala)): _*)
   }
 
   /**

@@ -17,6 +17,8 @@
 
 package kafka.utils
 
+import annotation.StaticAnnotation
+
 /* Some helpful annotations */
 
 /**

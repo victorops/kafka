@@ -19,7 +19,10 @@ package kafka.utils
 
 import java.util.ArrayList
 import java.util.concurrent._
-import collection.JavaConversions
+import java.util
+
+//import collection.JavaConversions
+import collection.JavaConverters._
 
 class Pool[K,V] extends Iterable[(K, V)] {
 
@@ -27,8 +30,7 @@ class Pool[K,V] extends Iterable[(K, V)] {
   
   def this(m: collection.Map[K, V]) {
     this()
-    for((k,v) <- m.elements)
-      pool.put(k, v)
+    m map { case (k,v) => pool.put(k, v)}
   }
   
   def put(k: K, v: V) = pool.put(k, v)
@@ -41,10 +43,10 @@ class Pool[K,V] extends Iterable[(K, V)] {
   
   def remove(key: K): V = pool.remove(key)
   
-  def keys = JavaConversions.asSet(pool.keySet())
+  def keys = pool.keySet.asScala.toSet
   
-  def values: Iterable[V] = 
-    JavaConversions.asIterable(new ArrayList[V](pool.values()))
+  def values: Iterable[V] = new util.ArrayList[V](pool.values).asScala
+    //JavaConversions.asIterable(new ArrayList[V](pool.values()))
   
   def clear: Unit = pool.clear()
   

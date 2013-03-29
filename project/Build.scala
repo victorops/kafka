@@ -54,6 +54,9 @@ object KafkaBuild extends Build {
       </dependencies>
   ) ++ assemblySettings ++ Seq(
     test in assembly := {},      // skip tests because they don't compile
+    excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+      cp filter {_.data.getName == "sbt-launch.jar"}
+    },
     mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
       {
         case PathList("org", "I0Itec", "zkclient", xs @ _*) => MergeStrategy.last

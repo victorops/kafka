@@ -22,6 +22,9 @@ import java.io.File
 import scala.xml.{Node, Elem}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
+import sbtassembly.Plugin._
+import AssemblyKeys._
+
 object KafkaBuild extends Build {
   val commonSettings = Seq(
     version := "0.8-SNAPSHOT",
@@ -49,6 +52,14 @@ object KafkaBuild extends Build {
           <exclude org="jline" module="jline"/>
         </dependency>
       </dependencies>
+  ) ++ assemblySettings ++ Seq(
+    test in assembly := {},      // skip tests because they don't compile
+    mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
+      {
+        case PathList("org", "I0Itec", "zkclient", xs @ _*) => MergeStrategy.last
+        case x => old(x)
+      }
+    }
   )
 
   val hadoopSettings = Seq(
@@ -61,7 +72,7 @@ object KafkaBuild extends Build {
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.5.5",
       "org.apache.hadoop"    % "hadoop-core"        % "0.20.2"
     ),
-    ivyXML := 
+    ivyXML :=
        <dependencies>
          <exclude module="netty"/>
          <exclude module="javax"/>
@@ -87,7 +98,9 @@ object KafkaBuild extends Build {
     "bin/run-rat.sh" !
   }
 
-  lazy val kafka    = Project(id = "Kafka", base = file(".")).aggregate(core, examples, contrib, perf).settings((commonSettings ++ runRatTask): _*)
+  // Skip contrib in the kafka project because I don't want to deal with the dedup conflicts when
+  // creating a fat jar with "assembly".  contrib is the hadoop stuff which we are not (ATM) using.
+  lazy val kafka    = Project(id = "Kafka", base = file(".")).aggregate(core, examples, /*contrib,*/ perf).settings((commonSettings ++ runRatTask): _*)
   lazy val core     = Project(id = "core", base = file("core")).settings(commonSettings: _*).settings(coreSettings: _*)
   lazy val examples = Project(id = "java-examples", base = file("examples")).settings(commonSettings :_*) dependsOn (core)
   lazy val perf     = Project(id = "perf", base = file("perf")).settings((Seq(name := "kafka-perf") ++ commonSettings):_*) dependsOn (core)

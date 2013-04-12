@@ -5,7 +5,7 @@ and single Kafka server setup, which should be fine for dev purposes.  It is rel
 
 # Build
 We build for Scala 2.10.1.  In the root of your clone, run:
-> __sbt "++2.10.1 package"__
+> sbt "++2.10.1 package"
 
 # Filesystem prep
 The sample/default configurations that come with Kafka have Zookeeper and Kafka storing their data in /tmp.  For persistence of ZK and Kafka data across reboots, make the following directories:
